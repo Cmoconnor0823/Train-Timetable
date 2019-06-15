@@ -16,14 +16,14 @@
     <!-- Moment js -->
     <script src="https://momentjs.com/downloads/moment.js"></script>
     <!--Link to external CSS Style sheet-->
-    <link rel="stylesheet" type="text/css" href="./assets/css/style.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/style.css">
 </head>
 
 <body>
-    <div class="background">
+    <div class="mainShell">
         <div class="container">
             <div class="row">
-                <div class="jumbotron m-3 p-2 text-secondary col col-md-6 col-lg-12 text-center ">
+                <div class="jumbotron mainBox m-3 p-2 text-secondary col col-md-6 col-lg-12 text-center ">
                     <header>
                         <h1> Wax and Wayne Station</h1>
                         <h3>Below is the train schedule for the Wax and Wayne Way Station</h3>
@@ -46,26 +46,26 @@
 
         <div class="container">
             <div class="row">
-                    <div class="card m-3 p-2 col col-lg-12">
+                    <div class="card mainBox m-3 p-2 col col-lg-12">
                         <div class="card-header m-1 text-secondary">Add a train route</div>
                             <form class="m-2">
-                              <div class="form-group">
-                                <label for="search">Train Name:</label>
-                                <input type="text" class="form-control" id="empName">
+                              <div class="form-group text-secondary">
+                                <label for="name">Train Name:</label>
+                                <input type="text" class="form-control" id="trainName">
                               </div>
-                              <div class="form-group">
-                                <label for="recordsNumber">Role:</label>
-                                <input type="text" class="form-control" id="Role">
+                              <div class="form-group text-secondary">
+                                <label for="destination">Destination:</label>
+                                <input type="text" class="form-control" id="Dest">
                               </div>
-                              <div class="form-group">
-                                <label for="startYear">Start Date</label>
-                                <input type="text" class="form-control" id="startDate">
+                              <div class="form-group text-secondary">
+                                <label for="startime">First train time (HH:mm - military time)</label>
+                                <input type="text" class="form-control" id="startTime">
                               </div>
-                              <div class="form-group">
-                                <label for="endYear">Monthly Rate:</label>
-                                <input type="text" class="form-control" id="monthRate">
+                              <div class="form-group text-secondary">
+                                <label for="frequency">Frequency (min):</label>
+                                <input type="text" class="form-control" id="frequency">
                               </div>
-                              <button id="submit" type="submit" class="btn m-2 btn-info">Submit</button>
+                              <button id="submit" type="submit" class="btn m-2 btn-info text-secondary">Submit</button>
                             </form>
                           </div>
             </div>
