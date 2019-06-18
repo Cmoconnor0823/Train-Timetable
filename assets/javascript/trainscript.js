@@ -21,7 +21,34 @@ var database = firebase.database();
 
     //2) Now make that dang submit button work. Again remember you've done this check  the above hw lines 25-33
 
-    //2a) Now stick those trains in an object in your database!!! Check your work!! (nice touch clear form fill afterwards) 
+    $("#submit-btn").on("click", function(event) {
+        event.preventDefault();
+      
+        // Grabs user input
+        var trainName = $("#trainName-input").val().trim();
+        var trainDest = $("#dest-input").val().trim();
+        var trainStart = moment($("#startTime-input").val().trim(), "HH:mm").format("????????");
+        var trainFreq = $("#frequency-input").val().trim();
+
+        var newTrain = {
+            name: trainName,
+            dest: trainDest,
+            start: trainStart,
+            frequency: trainFreq
+          };
+
+    //2a) Now stick those trains in an object in your database!!! Check your work!! (nice touch clear form fill afterwards)
+    
+    // Uploads Train data to the database
+  database.ref().push(newTrain);
+
+  // Logs everything to console
+  console.log(newTrain.name);
+  console.log(newTrain.dest);
+  console.log(newTrain.start);
+  console.log(newTrain.frequency);
+
+  alert("New Route successfully added");
 
     //3) Now Get those useless added trains back from firebase,
 
