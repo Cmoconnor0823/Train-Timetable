@@ -13,7 +13,7 @@ var firebaseConfig = {
     appId: "1:529292222769:web:344bd715145c970e"
   };
 
-  firebase.initializeApp(config);
+  firebase.initializeApp(firebaseConfig);
 
 var database = firebase.database();
 
@@ -49,6 +49,7 @@ var database = firebase.database();
   console.log(newTrain.frequency);
 
   alert("New Route successfully added");
+});
 
     //3) Now Get those useless added trains back from firebase,
 
