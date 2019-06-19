@@ -4,5 +4,7 @@
 			"path": "C:\\Users\\Caitlin\\Documents\\GitHub\\Train-Timetable"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"liveServer.settings.port": 5501
+	}
 }

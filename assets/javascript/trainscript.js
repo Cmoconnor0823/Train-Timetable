@@ -27,7 +27,7 @@ var database = firebase.database();
         // Grabs user input
         var trainName = $("#trainName-input").val().trim();
         var trainDest = $("#dest-input").val().trim();
-        var trainStart = moment($("#startTime-input").val().trim(), "HH:mm").format("????????");
+        var trainStart = moment($("#startTime-input").val().trim(), "HH:mm").format("x"); //x here converts time to a uinx code
         var trainFreq = $("#frequency-input").val().trim();
 
         var newTrain = {
@@ -49,9 +49,31 @@ var database = firebase.database();
   console.log(newTrain.frequency);
 
   alert("New Route successfully added");
+
+  // Clears all of the text-boxes
+  $("#trainName-input").val("");
+  $("#dest-input").val("");
+  $("#startTime-input").val("");
+  $("#frequency-input").val("");
+
 });
 
     //3) Now Get those useless added trains back from firebase,
+    database.ref().on("child_added", function(childSnapshot) {
+      console.log(childSnapshot.val());
+    
+      // Store everything into a variable.
+      var trainName = childSnapshot.val().name;
+      var trainDest = childSnapshot.val().dest;
+      var trainStart = childSnapshot.val().start;
+      var trainFreq = childSnapshot.val().frequency;
+    
+      // Employee Info
+      console.log(trainName);
+      console.log(trainDest);
+      console.log(trainStart);
+      console.log(trainFreq);
+    });
 
     //3a) Annnnd now that you've got them put display that LOUD and PROUD!!!
 
