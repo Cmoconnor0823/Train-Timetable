@@ -48,7 +48,7 @@ $(document).ready(function () {
           // Train Info
           //console.log(trainName);
           //console.log(trainDest);
-          //console.log(trainStart);
+          console.log("train Start" +trainStart);
           //console.log(trainFreq);
           //console.log(trainArrival);
           //console.log(trainMinAway);
@@ -67,6 +67,7 @@ $(document).ready(function () {
 
         // First Time (pushed back 1 year to make sure it comes before current time)
         var firstTimeConverted = moment(firstTime, "HH:mm").subtract(1, "years");
+        console.log("firstTime: " +firstTime)
         console.log("firstTimeConverted: " + firstTimeConverted);
 
         // Current Time
@@ -108,7 +109,7 @@ $(document).ready(function () {
 
   setTimeout(function () {
     location.reload();
-  }, 1000);
+  }, 60000);
 });
 
 //Revision make the submit button work only once the document loads
