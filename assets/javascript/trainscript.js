@@ -33,9 +33,9 @@ $(document).ready(function () {
 
         // childData will be the actual contents of the child
         var childData = childSnapshot.val();
-        //console.log(childData);
+        console.log(childData);
         tableArr.push(childData);
-        //console.log(tableArr);
+        console.log(tableArr);
         JSON.stringify(tableArr);
 
         for (var i = 0; i < tableArr.length; i++) {
@@ -48,50 +48,50 @@ $(document).ready(function () {
           // Train Info
           //console.log(trainName);
           //console.log(trainDest);
-          //console.log("train Start" + trainStart);
+          console.log("train Start" +trainStart);
           //console.log(trainFreq);
           //console.log(trainArrival);
           //console.log(trainMinAway);
         }
 
-        //5--found out during coding this should be step 3) then repeated again for new trains in step 5)
-        // Starting with the first arrival time in Militry Time, 
-        //add the Frequency in Miniutes to 
-        //display the Time Remaining in Miniutes till the next train arrives
-
+//5--found out during coding this should be step 3) then repeated again for new trains in step 5)
+// Starting with the first arrival time in Militry Time, 
+//add the Frequency in Miniutes to 
+//display the Time Remaining in Miniutes till the next train arrives
+        
         var tFrequency = trainFreq;
-        //console.log("train frequency" + tFrequency)
+        console.log("train frequency" + tFrequency)
 
         // start time from database call
         var firstTime = trainStart;
-        //console.log("Train start time " + trainStart)
+        console.log("Train start time " + trainStart)
 
         // First Time (pushed back 1 year to make sure it comes before current time)
         var firstTimeConverted = moment(firstTime, "HH:mm").subtract(1, "years");
-        //console.log("firstTime: " + firstTime)
-        //console.log("firstTimeConverted: " + firstTimeConverted);
+        console.log("firstTime: " +firstTime)
+        console.log("firstTimeConverted: " + firstTimeConverted);
 
         // Current Time
         var currentTime = moment();
-        //console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
+        console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
 
         // Difference between the times
         var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
-        //console.log("DIFFERENCE IN TIME: " + diffTime);
+        console.log("DIFFERENCE IN TIME: " + diffTime);
 
         // Time apart (remainder)
         var tRemainder = diffTime % tFrequency;
-        //console.log(tRemainder);
+        console.log(tRemainder);
 
         // Minute Until Train Arrives
         var trainMinAway = tFrequency - tRemainder;
-        //console.log("MINUTES TILL TRAIN: " + trainMinAway);
+        console.log("MINUTES TILL TRAIN: " + trainMinAway);
 
         // Next Train
         var trainArrival = moment().add(trainMinAway, "minutes");
-        //console.log("ARRIVAL TIME: " + moment(trainArrival).format("hh:mm"));
+        console.log("ARRIVAL TIME: " + moment(trainArrival).format("hh:mm"));
         var newArrival = moment(trainArrival).format("HH:mm;");
-        //console.log(trainMinAway);
+        console.log(trainMinAway);
 
         //3a) Annnnd now that you've got them put display that LOUD and PROUD!!!
         var table = $("<tbody>")
@@ -107,11 +107,11 @@ $(document).ready(function () {
         // Append the new row to the table
         $("#train-table > tbody").append(
           $("<tr>").append(
-            $("<td>").text(trainName),
-            $("<td>").text(trainDest),
-            $("<td>").text(trainFreq),
-            $("<td>").text(newArrival),
-            $("<td>").text(trainMinAway),
+          $("<td>").text(trainName),
+          $("<td>").text(trainDest),
+          $("<td>").text(trainFreq),
+          $("<td>").text(newArrival),
+          $("<td>").text(trainMinAway),
           )
         );
       })
@@ -119,7 +119,7 @@ $(document).ready(function () {
 
   setTimeout(function () {
     location.reload();
-  }, 600000);
+  }, 60000);
 });
 
 //Revision make the submit button work only once the document loads
@@ -138,29 +138,29 @@ $('#submit-btn').on("click", function (event) {
   var trainDest = $("#dest-input").val().trim();
   var trainStart = $("#startTime-input").val().trim() //x here converts time to a uinx code
   var trainFreq = $("#frequency-input").val().trim();
-
+ 
   // Store everything into a variable.
   var newTrain = {
     name: trainName,
     dest: trainDest,
     start: trainStart,
     frequency: trainFreq,
+   
   };
-
 
   //2a) Now stick those trains in an object in your database!!! Check your work!! (nice touch clear form fill afterwards)
 
   // Uploads Train data to the database
-  // console.log('train push')
+  console.log('train push')
   database.ref().push(newTrain);
 
-  // // Logs everything to console
-  // console.log(newTrain.name);
-  // console.log(newTrain.dest);
-  // console.log(newTrain.start);
-  // console.log(newTrain.frequency);
-  // console.log("new train min array" + newTrain.trainMinAway);
-  // console.log(newTrain.nextArrival);
+  // Logs everything to console
+  console.log(newTrain.name);
+  console.log(newTrain.dest);
+  console.log(newTrain.start);
+  console.log(newTrain.frequency);
+  console.log("new train min array"+newTrain.minutesAway);
+  console.log(newTrain.nextArrival);
 
   alert("New Train Route successfully added");
 
@@ -169,120 +169,107 @@ $('#submit-btn').on("click", function (event) {
   $("#dest-input").val("");
   $("#startTime-input").val("");
   $("#frequency-input").val("");
-
+  
   //4) If you make it this far know its soo all down hill from here Stop and Breathe! ^.^
-  // 4)train table database call
+// 4)train table database call
 
-  database.ref().endAt().limitToLast(1).on("child_added", function (childSnapshot) {
+database.ref().endAt().limitToLast(1).on("child_added", function (childSnapshot) {
+  
+  console.log(childSnapshot);
+  console.log(childSnapshot.key)
+  // Store everything into a variable.
+  var ftTime = childSnapshot.val().firstTrainTime;
+  var freq = childSnapshot.val().frequency;
+  var key = childSnapshot.key
 
-    console.log(childSnapshot + "childSnapshot");
-    console.log(childSnapshot.key)
-    // Store everything into a variable.
-    var ftTime = childSnapshot.val().start;
-    var freq = childSnapshot.val().frequency;
-    var key = childSnapshot.key
+  console.log(key);
+  // Train Info
+  console.log(ftTime);
+  console.log(freq);
 
-    console.log(key);
-    // Train Info
-    console.log(ftTime);
-    console.log(freq);
-
-    keys.push(key);
-    freqs.push(ftTime, freq)
-
-    console.log(keys);
-    console.log(freqs);
-
-
-
-    var newRef = database.ref(keys[0]);
-    console.log(newRef)
-    var tFrequency = freqs[1];
-    var firstTime = freqs[0];
-    console.log(tFrequency);
-    console.log(firstTime);
-
-    //5--found out during coding this should be step 3) then repeated again for new trains in step 5)
-
-    // This is where the big Moment.js comes in time to create a way to calculate time till the next train arives
-    // Starting with the first arrival time in Militry Time, 
-    //add the Frequency in Miniutes to 
-    //display the Time Remaining in Miniutes till the next train arrives
-
-    // First Time (pushed back 1 year to make sure it comes before current time)
-    var firstTimeConverted = moment(firstTime, "HH:mm").subtract(1, "years");
-    console.log("firstTimeConverted: " + firstTimeConverted);
-
-    // Current Time
-    var currentTime = moment();
-    console.log("CURRENT TIME: " + moment(currentTime).format("HH:mm"));
-
-    // Difference between the times
-    var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
-    console.log("DIFFERENCE IN TIME: " + diffTime);
-
-    // Time apart (remainder)
-    var tRemainder = diffTime % tFrequency;
-    console.log(tRemainder);
-
-    // Minute Until Train
-    var trainMinAway = tFrequency - tRemainder;
-    console.log("MINUTES TILL TRAIN: " + trainMinAway);
-
-    // Next Train
-    var trainArrival = moment().add(trainMinAway, "minutes");
-    console.log("ARRIVAL TIME: " + moment(trainArrival).format("hh:mm"));
-    var nextArrival = moment(trainArrival).format("HH:mm;");
-    console.log(trainMinAway);
-     newRef.update({
-     
-      nextArrival: moment(trainArrival).format("HH:mm")
-    });
-    console.log("new arrival end" +nextArrival);
-
-     newRef.update({
-        minutesAway: trainMinAway
-     });
-
-    console.log("new reference check");
-
-    newRef.once("value")
-      .then(function (snapshot) {
-        var destination = snapshot.child("dest").val();
-        var frequency = snapshot.child("frequency").val();
-        var trainName = snapshot.child("name").val();
-
-        //these dont grab anything worth a damn
-        var nextArrival = snapshot.child("nextArrival").val();
-        console.log("nextarrival " +nextArrival)
-        var minutesAway = snapshot.child("trainMinAway").val();
-        console.log("trainMinAway " + trainMinAway)
-        console.log("minutesAway"+ minutesAway )
-
-        ///I cannot for the life of me get the calculated time to isplay on submit. it calculates just fine just wont print to page
-
-        textArr.push(trainName, destination, frequency, nextArrival, minutesAway);
-        console.log("textarr"+textArr)
+  keys.push(key);
+  freqs.push(ftTime, freq)
+  
+});
+console.log(keys);
+console.log(freqs);
 
 
-        //3a) Annnnd now that you've got them update that display with your new calculating trains LOUD and PROUD!!!
 
-        var table = $("<tbody>")
-        table.attr("id", keys[0]);
-        $("#train-table > tbody").append(
-          $("<tr>").append(
-          $("<td>").text(textArr[0]),
-          $("<td>").text(textArr[1]),
-          $("<td>").text(textArr[2]),
-          $("<td>").text(textArr[3]),
-          $("<td>").text(textArr[4]),
-          )
-        );
-        // Append the new row to the table
-        
+var newRef = database.ref(keys[0]);
+console.log(newRef)
+var tFrequency = freqs[1];
+var firstTime = freqs[0];
+console.log(tFrequency);
+console.log(firstTime);
 
-      });
+//5--found out during coding this should be step 3) then repeated again for new trains in step 5)
 
-  });
+// This is where the big Moment.js comes in time to create a way to calculate time till the next train arives
+// Starting with the first arrival time in Militry Time, 
+//add the Frequency in Miniutes to 
+//display the Time Remaining in Miniutes till the next train arrives
+
+// First Time (pushed back 1 year to make sure it comes before current time)
+var firstTimeConverted = moment(firstTime, "HH:mm").subtract(1, "years");
+console.log("firstTimeConverted: " + firstTimeConverted);
+
+// Current Time
+var currentTime = moment();
+console.log("CURRENT TIME: " + moment(currentTime).format("HH:mm"));
+
+// Difference between the times
+var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+console.log("DIFFERENCE IN TIME: " + diffTime);
+
+// Time apart (remainder)
+var tRemainder = diffTime % tFrequency;
+console.log(tRemainder);
+
+// Minute Until Train
+var trainMinAway = tFrequency - tRemainder;
+console.log("MINUTES TILL TRAIN: " + trainMinAway);
+
+// Next Train
+var trainArrival = moment().add(trainMinAway, "minutes");
+console.log("ARRIVAL TIME: " + moment(trainArrival).format("hh:mm"));
+
+// newRef.update({
+//   nextArrival: moment(nextTrain).format("HH:mm")
+// });
+
+// newRef.update({
+//   minutesAway: tMinutesTillTrain
+// });
+
+console.log("new reference check");
+
+newRef.once("value")
+  .then(function (snapshot) {
+    var trainName = snapshot.child("name").val();
+    var destination = snapshot.child("destination").val();
+    var frequency = snapshot.child("frequency").val();
+    var nextArrival = snapshot.child("nextArrival").val();
+    var minutesAway = snapshot.child("minutesAway").val();
+
+    textArr.push(trainName, destination, frequency, nextArrival, minutesAway);
+
+
+//3a) Annnnd now that you've got them update that display with your new calculating trains LOUD and PROUD!!!
+
+var table = $("<tbody>")
+table.attr("id", keys[0]);
+var newRow = table.append(
+  $("<td>").text(textArr[0]),
+  $("<td>").text(textArr[1]),
+  $("<td>").text(textArr[2]),
+  $("<td>").text(textArr[3]),
+  $("<td>").text(textArr[4]),
+);
+// Append the new row to the table
+$("#train-table> tbody").append(newRow);
 
 });
+
+});
+
