@@ -60,6 +60,7 @@ $(document).ready(function () {
 //display the Time Remaining in Miniutes till the next train arrives
         
         var tFrequency = trainFreq;
+        console.log("train frequency" + tFrequency)
 
         // start time from database call
         var firstTime = trainStart;
@@ -89,21 +90,30 @@ $(document).ready(function () {
         // Next Train
         var trainArrival = moment().add(trainMinAway, "minutes");
         console.log("ARRIVAL TIME: " + moment(trainArrival).format("hh:mm"));
-        trainMinAway = moment(trainArrival).format("HH:mm;")
+        var newArrival = moment(trainArrival).format("HH:mm;");
+        console.log(trainMinAway);
 
         //3a) Annnnd now that you've got them put display that LOUD and PROUD!!!
         var table = $("<tbody>")
         table.attr("id", tableArr[i]);
         // Create the new row
-        var newRow = table.append(
+        // var newRow = table.append(
+        //   $("<td>").text(trainName),
+        //   $("<td>").text(trainDest),
+        //   $("<td>").text(trainFreq),
+        //   $("<td>").text(trainArrival),
+        //   $("<td>").text(trainMinAway),
+        // );
+        // Append the new row to the table
+        $("#train-table > tbody").append(
+          $("<tr>").append(
           $("<td>").text(trainName),
           $("<td>").text(trainDest),
           $("<td>").text(trainFreq),
-          $("<td>").text(trainArrival),
+          $("<td>").text(newArrival),
           $("<td>").text(trainMinAway),
+          )
         );
-        // Append the new row to the table
-        $("#train-table > tbody").append(newRow);
       })
     })
 
@@ -115,7 +125,7 @@ $(document).ready(function () {
 //Revision make the submit button work only once the document loads
 //2) Now make that dang submit button work. Again remember you've done this check  the above hw lines 25-33
 
-$(document).on("click", "#submit", function (event) {
+$('#submit-btn').on("click", function (event) {
   event.preventDefault();
   keys = [];
   frequency = [];
@@ -126,21 +136,22 @@ $(document).on("click", "#submit", function (event) {
   // Grabs user input
   var trainName = $("#trainName-input").val().trim();
   var trainDest = $("#dest-input").val().trim();
-  var trainStart = moment($("#startTime-input").val().trim(), "HH:mm").format("x"); //x here converts time to a uinx code
+  var trainStart = $("#startTime-input").val().trim() //x here converts time to a uinx code
   var trainFreq = $("#frequency-input").val().trim();
+ 
   // Store everything into a variable.
   var newTrain = {
     name: trainName,
     dest: trainDest,
     start: trainStart,
     frequency: trainFreq,
-    minutesAway:0,
-    nextArrival:0,
+   
   };
 
   //2a) Now stick those trains in an object in your database!!! Check your work!! (nice touch clear form fill afterwards)
 
   // Uploads Train data to the database
+  console.log('train push')
   database.ref().push(newTrain);
 
   // Logs everything to console
@@ -148,7 +159,7 @@ $(document).on("click", "#submit", function (event) {
   console.log(newTrain.dest);
   console.log(newTrain.start);
   console.log(newTrain.frequency);
-  console.log(newTrain.minutesAway);
+  console.log("new train min array"+newTrain.minutesAway);
   console.log(newTrain.nextArrival);
 
   alert("New Train Route successfully added");
@@ -223,13 +234,13 @@ console.log("MINUTES TILL TRAIN: " + trainMinAway);
 var trainArrival = moment().add(trainMinAway, "minutes");
 console.log("ARRIVAL TIME: " + moment(trainArrival).format("hh:mm"));
 
-newRef.update({
-  nextArrival: moment(nextTrain).format("HH:mm")
-});
+// newRef.update({
+//   nextArrival: moment(nextTrain).format("HH:mm")
+// });
 
-newRef.update({
-  minutesAway: tMinutesTillTrain
-});
+// newRef.update({
+//   minutesAway: tMinutesTillTrain
+// });
 
 console.log("new reference check");
 
