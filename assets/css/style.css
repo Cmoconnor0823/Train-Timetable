@@ -1,5 +1,5 @@
 .mainShell{
-    background: url("/assets/images/skyTrain.jpg");
+    background: url("assets/images/skyTrain.jpg");
     background-size: cover;
     background-repeat: no-repeat;
     min-height:800px;
