@@ -105,7 +105,9 @@ $(document).ready(function () {
         //   $("<td>").text(trainMinAway),
         // );
         // Append the new row to the table
-        $("#train-table > tbody").append(
+        console.log("about to prnt table data")
+        console.log(trainName)
+        $("#train-table").append(
           $("<tr>").append(
           $("<td>").text(trainName),
           $("<td>").text(trainDest),
@@ -117,9 +119,9 @@ $(document).ready(function () {
       })
     })
 
-  setTimeout(function () {
-    location.reload();
-  }, 60000);
+  // setTimeout(function () {
+  //   location.reload();
+  // }, 60000);
 });
 
 //Revision make the submit button work only once the document loads
