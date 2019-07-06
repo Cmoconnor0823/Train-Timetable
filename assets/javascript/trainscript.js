@@ -96,15 +96,7 @@ $(document).ready(function () {
         //3a) Annnnd now that you've got them put display that LOUD and PROUD!!!
         var table = $("<tbody>")
         table.attr("id", tableArr[i]);
-        // Create the new row
-        // var newRow = table.append(
-        //   $("<td>").text(trainName),
-        //   $("<td>").text(trainDest),
-        //   $("<td>").text(trainFreq),
-        //   $("<td>").text(trainArrival),
-        //   $("<td>").text(trainMinAway),
-        // );
-        // Append the new row to the table
+        
         console.log("about to prnt table data")
         console.log(trainName)
         $("#train-table").append(
@@ -119,9 +111,9 @@ $(document).ready(function () {
       })
     })
 
-  // setTimeout(function () {
-  //   location.reload();
-  // }, 60000);
+  setTimeout(function () {
+    location.reload();
+  }, 60000);
 });
 
 //Revision make the submit button work only once the document loads
