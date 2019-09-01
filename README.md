@@ -10,9 +10,9 @@
 <h2> Application in action </h2>
 <h6>On page load the table will append with data stored in the database, listing several different trains and the data associated with each one. The page will also actively compare the arrivial time to the user's local time and display minutes until next arrival, using Moment.js. Finally the page will update periodically with current minutes left until the applicable train arrives. Users can also enter their own train route to the database and watch it append in real time to the train schedule.</h6>
 
-
+<br>
 ![Image of working site](assets/images/Wax_and_Wayne.png)
-
+<br>
 
 
 <h2>Technology</h2>
@@ -32,4 +32,8 @@
 
 * [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference)
 
-For comments/ concerns contact the page author Caitlin O'Connor @ Cmoconnor0823@gmail.com
+
+For comments/ concerns contact the project 
+Author: Caitlin O'Connor  
+At: Cmoconnor0823@gmail.com
+
