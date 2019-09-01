@@ -1,7 +1,5 @@
-//****Remember now BABY STEPS!!!!! I WANNA SEE PSUDO CODING!!!! 
-//AND FOR THE LOVE OF YOUR SANITY I WANNA SEE Console.log EVERYWHERE! */
 
-//1) Initalize fire base-- phsh easy peasy check out hw 17 line 10 -19 for reference ok?
+//1) Initalize fire base
 
 var firebaseConfig = {
   apiKey: "AIzaSyAc4NFhmNxHmSP_LpIDhfzY1QUh9Br6SuY",
@@ -21,7 +19,7 @@ var freqs = [];//
 var textArr = [];//
 var tableArr = [];//
 
-//1a.)How in the $%&* are you displaying some trains pre loaded?????? check out how to pre fill database???
+//1a.) Display the trains on page load
 $(document).ready(function () {
   console.log("What's up Doc!");
 
@@ -55,7 +53,7 @@ $(document).ready(function () {
         }
 
 //5--found out during coding this should be step 3) then repeated again for new trains in step 5)
-// Starting with the first arrival time in Militry Time, 
+// Starting with the first arrival time in Military Time, 
 //add the Frequency in Miniutes to 
 //display the Time Remaining in Miniutes till the next train arrives
         
@@ -117,7 +115,7 @@ $(document).ready(function () {
 });
 
 //Revision make the submit button work only once the document loads
-//2) Now make that dang submit button work. Again remember you've done this check  the above hw lines 25-33
+//2) Now make that submit button. 
 
 $('#submit-btn').on("click", function (event) {
   event.preventDefault();
@@ -164,7 +162,7 @@ $('#submit-btn').on("click", function (event) {
   $("#startTime-input").val("");
   $("#frequency-input").val("");
   
-  //4) If you make it this far know its soo all down hill from here Stop and Breathe! ^.^
+
 // 4)train table database call
 
 database.ref().endAt().limitToLast(1).on("child_added", function (childSnapshot) {
