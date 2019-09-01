@@ -12,6 +12,8 @@
 
 <br>
 ![Image of working site](assets/images/Wax_and_Wayne.png)
+![Image of working site](/images/Wax_and_Wayne.png)
+![Image of working site](images/Wax_and_Wayne.png)
 <br>
 
 
