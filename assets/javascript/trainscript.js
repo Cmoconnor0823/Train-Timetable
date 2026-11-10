@@ -13,255 +13,309 @@ var firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-var database = firebase.database();//
-var keys = [];//
-var freqs = [];//
-var textArr = [];//
-var tableArr = [];//
 
-//1a.) Display the trains on page load
+var database = firebase.database();
+var trains = {};
+var scheduleLoaded = false;
+
 $(document).ready(function () {
   console.log("What's up Doc!");
 
-  var query = firebase.database().ref().orderByKey();
+  //1a.) Get that train table ready before we start adding routes!
+  var table = document.getElementById("train-table");
+  var tableBody = table.tBodies[0];
 
-  query.once("value")
-    .then(function (snapshot) {
-      snapshot.forEach(function (childSnapshot) {
+  if (!tableBody) {
+    tableBody = table.createTBody();
+  }
 
-        // childData will be the actual contents of the child
-        var childData = childSnapshot.val();
-        console.log(childData);
-        tableArr.push(childData);
-        console.log(tableArr);
-        JSON.stringify(tableArr);
+  var submitButton = document.getElementById("submit-btn");
+  var form = submitButton.form;
 
-        for (var i = 0; i < tableArr.length; i++) {
-          var trainName = tableArr[i].name;
-          var trainDest = tableArr[i].dest;
-          var trainStart = tableArr[i].start;
-          var trainFreq = tableArr[i].frequency;
-          var trainArrival = tableArr[i].nextArrival;
-          var trainMinAway = tableArr[i].minutesAway;
-          // Train Info
-          //console.log(trainName);
-          //console.log(trainDest);
-          console.log("train Start" +trainStart);
-          //console.log(trainFreq);
-          //console.log(trainArrival);
-          //console.log(trainMinAway);
-        }
+  // Keep our messages on the page so nobody misses what happened.
+  var message = document.createElement("p");
+  message.setAttribute("role", "status");
+  message.setAttribute("aria-live", "polite");
+  form.appendChild(message);
 
-//5--found out during coding this should be step 3) then repeated again for new trains in step 5)
-// Starting with the first arrival time in Military Time, 
-//add the Frequency in Miniutes to 
-//display the Time Remaining in Miniutes till the next train arrives
-        
-        var tFrequency = trainFreq;
-        console.log("train frequency" + tFrequency)
+  function showMessage(text, isError) {
+    message.textContent = text;
+    message.style.color = isError ? "#a01818" : "#155724";
+  }
 
-        // start time from database call
-        var firstTime = trainStart;
-        console.log("Train start time " + trainStart)
+  function showTableMessage(text) {
+    tableBody.replaceChildren();
 
-        // First Time (pushed back 1 year to make sure it comes before current time)
-        var firstTimeConverted = moment(firstTime, "HH:mm").subtract(1, "years");
-        console.log("firstTime: " +firstTime)
-        console.log("firstTimeConverted: " + firstTimeConverted);
+    var cell = tableBody.insertRow().insertCell();
+    cell.colSpan = 5;
+    cell.textContent = text;
+  }
 
-        // Current Time
-        var currentTime = moment();
-        console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
+  //2) Starting with the first arrival time in Military Time,
+  // add the Frequency in Minutes to find the next train.
+  // Each day's schedule starts at the First Train Time.
+  function calculateArrival(firstTime, frequency, currentTime) {
+    var timeParts = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(firstTime);
+    var trainFrequency = Number(frequency);
 
-        // Difference between the times
-        var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
-        console.log("DIFFERENCE IN TIME: " + diffTime);
+    if (
+      !timeParts ||
+      !Number.isInteger(trainFrequency) ||
+      trainFrequency < 1 ||
+      trainFrequency > 1440
+    ) {
+      return null;
+    }
 
-        // Time apart (remainder)
-        var tRemainder = diffTime % tFrequency;
-        console.log(tRemainder);
+    var firstArrival = new Date(currentTime);
+    firstArrival.setHours(
+      Number(timeParts[1]),
+      Number(timeParts[2]),
+      0,
+      0
+    );
 
-        // Minute Until Train Arrives
-        var trainMinAway = tFrequency - tRemainder;
-        console.log("MINUTES TILL TRAIN: " + trainMinAway);
+    var frequencyInMilliseconds = trainFrequency * 60000;
+    var timePassed = currentTime.getTime() - firstArrival.getTime();
 
-        // Next Train
-        var trainArrival = moment().add(trainMinAway, "minutes");
-        console.log("ARRIVAL TIME: " + moment(trainArrival).format("hh:mm"));
-        var newArrival = moment(trainArrival).format("HH:mm;");
-        console.log(trainMinAway);
+    // If the first train has not arrived yet, start there!
+    var departures = Math.max(
+      0,
+      Math.ceil(timePassed / frequencyInMilliseconds)
+    );
 
-        //3a) Annnnd now that you've got them put display that LOUD and PROUD!!!
-        var table = $("<tbody>")
-        table.attr("id", tableArr[i]);
-        
-        console.log("about to prnt table data")
-        console.log(trainName)
-        $("#train-table").append(
-          $("<tr>").append(
-          $("<td>").text(trainName),
-          $("<td>").text(trainDest),
-          $("<td>").text(trainFreq),
-          $("<td>").text(newArrival),
-          $("<td>").text(trainMinAway),
-          )
+    var nextArrival = new Date(
+      firstArrival.getTime() +
+      departures * frequencyInMilliseconds
+    );
+
+    // If today's service is over, use tomorrow's first train.
+    var tomorrow = new Date(firstArrival);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+
+    if (nextArrival >= tomorrow) {
+      nextArrival = new Date(firstArrival);
+      nextArrival.setDate(nextArrival.getDate() + 1);
+    }
+
+    var minutesAway = Math.max(
+      0,
+      Math.ceil(
+        (nextArrival.getTime() - currentTime.getTime()) / 60000
+      )
+    );
+
+    return {
+      nextArrival: nextArrival.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      }),
+      minutesAway: minutesAway
+    };
+  }
+
+  //3) Annnnd now that you've got them, display those trains
+  // LOUD and PROUD!!!
+  function displayTrains() {
+    if (!scheduleLoaded) {
+      return;
+    }
+
+    tableBody.replaceChildren();
+
+    var trainList = Object.values(trains).filter(function (train) {
+      return train && typeof train === "object";
+    });
+
+    if (trainList.length === 0) {
+      showTableMessage("No Train Routes have been added yet.");
+      return;
+    }
+
+    var currentTime = new Date();
+
+    trainList.forEach(function (train) {
+      var arrival = calculateArrival(
+        String(train.start || ""),
+        train.frequency,
+        currentTime
+      );
+
+      var row = tableBody.insertRow();
+
+      var trainInfo = [
+        train.name || "Train Name not provided",
+        train.dest || "Destination not provided",
+        train.frequency || "Not provided",
+        arrival ? arrival.nextArrival : "Check First Train Time",
+        arrival ? arrival.minutesAway : "Check Train Schedule"
+      ];
+
+      trainInfo.forEach(function (value) {
+        row.insertCell().textContent = String(value);
+      });
+    });
+  }
+
+  //3a.) Display the trains on page load.
+  // Listen for changes so the table stays up to date.
+  showTableMessage("Loading Train Routes...");
+
+  // A disconnected database might not immediately report an error.
+  var loadingTimer = setTimeout(function () {
+    if (!scheduleLoaded) {
+      showTableMessage(
+        "Train schedule is taking longer than expected to load."
+      );
+      showMessage(
+        "Still waiting for Firebase. Please check your connection.",
+        true
+      );
+    }
+  }, 15000);
+
+  database.ref().on(
+    "value",
+    function (snapshot) {
+      clearTimeout(loadingTimer);
+
+      var firstLoad = !scheduleLoaded;
+      trains = snapshot.val() || {};
+      scheduleLoaded = true;
+
+      displayTrains();
+
+      if (firstLoad) {
+        showMessage("Train schedule loaded successfully.", false);
+      }
+    },
+    function (error) {
+      clearTimeout(loadingTimer);
+      scheduleLoaded = false;
+
+      showTableMessage("Train schedule could not be loaded.");
+      showMessage(
+        "Train schedule could not be loaded. Please try again.",
+        true
+      );
+
+      console.error("Train schedule needs attention:", error);
+    }
+  );
+
+  //3b.) Keep those arrival times current!
+  // Update the table without refreshing the whole page.
+  setInterval(displayTrains, 30000);
+
+  //4) Now make that submit button work!
+  // Listen to the form so pressing Enter works too.
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    if (submitButton.disabled) {
+      return;
+    }
+
+    // Grabs user input.
+    var trainName =
+      document.getElementById("trainName-input").value.trim();
+
+    var trainDest =
+      document.getElementById("dest-input").value.trim();
+
+    var trainStart =
+      document.getElementById("startTime-input").value.trim();
+
+    var trainFreq = Number(
+      document.getElementById("frequency-input").value.trim()
+    );
+
+    //4a.) Check your work before sending those trains off!
+    if (!trainName || !trainDest) {
+      showMessage(
+        "Please enter a Train Name and Destination.",
+        true
+      );
+      return;
+    }
+
+    if (!/^([01]\d|2[0-3]):([0-5]\d)$/.test(trainStart)) {
+      showMessage(
+        "Please enter the First Train Time in HH:mm format.",
+        true
+      );
+      return;
+    }
+
+    if (
+      !Number.isInteger(trainFreq) ||
+      trainFreq < 1 ||
+      trainFreq > 1440
+    ) {
+      showMessage(
+        "Please enter the Frequency as a whole number from 1 to 1440 minutes.",
+        true
+      );
+      return;
+    }
+
+    // Store everything in an object.
+    var newTrain = {
+      name: trainName,
+      dest: trainDest,
+      start: trainStart,
+      frequency: trainFreq
+    };
+
+    //5) Now stick those trains in your database!!!
+    // Wait for Firebase to confirm before saying it worked.
+    submitButton.disabled = true;
+    showMessage("Adding your new Train Route...", false);
+
+    var savingTimer = setTimeout(function () {
+      showMessage(
+        "Still waiting for Firebase to confirm your Train Route. " +
+        "Please don't submit it again yet.",
+        true
+      );
+    }, 15000);
+
+    try {
+      await database.ref().push(newTrain);
+
+      // Nice touch: clear the form only after a successful save!
+      form.reset();
+
+      showMessage(
+        "New Train Route successfully added",
+        false
+      );
+
+      // The database listener above will update the table for us.
+    } catch (error) {
+      var permissionDenied = /permission/i.test(
+        String(error.code || "") + " " + String(error.message || "")
+      );
+
+      if (permissionDenied) {
+        showMessage(
+          "Train Route could not be added. " +
+          "Saving is currently disabled for this demo.",
+          true
         );
-      })
-    })
+      } else {
+        showMessage(
+          "Train Route could not be added. Please try again.",
+          true
+        );
+      }
 
-  setTimeout(function () {
-    location.reload();
-  }, 60000);
+      console.error("Train Route needs attention:", error);
+    } finally {
+      clearTimeout(savingTimer);
+      submitButton.disabled = false;
+    }
+  });
 });
-
-//Revision make the submit button work only once the document loads
-//2) Now make that submit button. 
-
-$('#submit-btn').on("click", function (event) {
-  event.preventDefault();
-  keys = [];
-  frequency = [];
-  textArr = [];
-  // console.log(frequency);
-  //console.log(textArr);
-
-  // Grabs user input
-  var trainName = $("#trainName-input").val().trim();
-  var trainDest = $("#dest-input").val().trim();
-  var trainStart = $("#startTime-input").val().trim() //x here converts time to a uinx code
-  var trainFreq = $("#frequency-input").val().trim();
- 
-  // Store everything into a variable.
-  var newTrain = {
-    name: trainName,
-    dest: trainDest,
-    start: trainStart,
-    frequency: trainFreq,
-   
-  };
-
-  //2a) Now stick those trains in an object in your database!!! Check your work!! (nice touch clear form fill afterwards)
-
-  // Uploads Train data to the database
-  console.log('train push')
-  database.ref().push(newTrain);
-
-  // Logs everything to console
-  console.log(newTrain.name);
-  console.log(newTrain.dest);
-  console.log(newTrain.start);
-  console.log(newTrain.frequency);
-  console.log("new train min array"+newTrain.minutesAway);
-  console.log(newTrain.nextArrival);
-
-  alert("New Train Route successfully added");
-
-  // Clears all of the text-boxes
-  $("#trainName-input").val("");
-  $("#dest-input").val("");
-  $("#startTime-input").val("");
-  $("#frequency-input").val("");
-  
-
-// 4)train table database call
-
-database.ref().endAt().limitToLast(1).on("child_added", function (childSnapshot) {
-  
-  console.log(childSnapshot);
-  console.log(childSnapshot.key)
-  // Store everything into a variable.
-  var ftTime = childSnapshot.val().firstTrainTime;
-  var freq = childSnapshot.val().frequency;
-  var key = childSnapshot.key
-
-  console.log(key);
-  // Train Info
-  console.log(ftTime);
-  console.log(freq);
-
-  keys.push(key);
-  freqs.push(ftTime, freq)
-  
-});
-console.log(keys);
-console.log(freqs);
-
-
-
-var newRef = database.ref(keys[0]);
-console.log(newRef)
-var tFrequency = freqs[1];
-var firstTime = freqs[0];
-console.log(tFrequency);
-console.log(firstTime);
-
-//5--found out during coding this should be step 3) then repeated again for new trains in step 5)
-
-// This is where the big Moment.js comes in time to create a way to calculate time till the next train arives
-// Starting with the first arrival time in Militry Time, 
-//add the Frequency in Miniutes to 
-//display the Time Remaining in Miniutes till the next train arrives
-
-// First Time (pushed back 1 year to make sure it comes before current time)
-var firstTimeConverted = moment(firstTime, "HH:mm").subtract(1, "years");
-console.log("firstTimeConverted: " + firstTimeConverted);
-
-// Current Time
-var currentTime = moment();
-console.log("CURRENT TIME: " + moment(currentTime).format("HH:mm"));
-
-// Difference between the times
-var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
-console.log("DIFFERENCE IN TIME: " + diffTime);
-
-// Time apart (remainder)
-var tRemainder = diffTime % tFrequency;
-console.log(tRemainder);
-
-// Minute Until Train
-var trainMinAway = tFrequency - tRemainder;
-console.log("MINUTES TILL TRAIN: " + trainMinAway);
-
-// Next Train
-var trainArrival = moment().add(trainMinAway, "minutes");
-console.log("ARRIVAL TIME: " + moment(trainArrival).format("hh:mm"));
-
-// newRef.update({
-//   nextArrival: moment(nextTrain).format("HH:mm")
-// });
-
-// newRef.update({
-//   minutesAway: tMinutesTillTrain
-// });
-
-console.log("new reference check");
-
-newRef.once("value")
-  .then(function (snapshot) {
-    var trainName = snapshot.child("name").val();
-    var destination = snapshot.child("destination").val();
-    var frequency = snapshot.child("frequency").val();
-    var nextArrival = snapshot.child("nextArrival").val();
-    var minutesAway = snapshot.child("minutesAway").val();
-
-    textArr.push(trainName, destination, frequency, nextArrival, minutesAway);
-
-
-//3a) Annnnd now that you've got them update that display with your new calculating trains LOUD and PROUD!!!
-
-var table = $("<tbody>")
-table.attr("id", keys[0]);
-var newRow = table.append(
-  $("<td>").text(textArr[0]),
-  $("<td>").text(textArr[1]),
-  $("<td>").text(textArr[2]),
-  $("<td>").text(textArr[3]),
-  $("<td>").text(textArr[4]),
-);
-// Append the new row to the table
-$("#train-table> tbody").append(newRow);
-
-});
-
-});
-
